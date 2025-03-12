@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Speech Emotion Recognition</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+        }
+        #result-image {
+            max-width: 200px;
+            height: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Speech Emotion Recognition</h1>
+    <input type="file" id="audioInput" accept="audio/*">
+    <button onclick="predictEmotion()">Predict Emotion</button>
+    <p id="result"></p>
+    <img id="result-image" src="" alt="Emotion Image">
+
+    <script>
+        function predictEmotion() {
+            const audioInput = document.getElementById('audioInput');
+            const result = document.getElementById('result');
+            const resultImage = document.getElementById('result-image');
+
+            if (audioInput.files.length === 0) {
+                result.textContent = "❌ Please select an audio file.";
+                resultImage.src = "d:\SpeechEmotion REcognition\images\error.png";  // Show error image
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', audioInput.files[0]);
+
+            fetch('http://127.0.0.1:5000/predict', { // Ensure API URL is correct
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    result.textContent = `❌ An error occurred during prediction.`;
+                    resultImage.src = "d:\SpeechEmotion REcognition\images\error.png";  // Show error image
+                } else {
+                    result.textContent = `✅ Predicted Emotion: ${data.emotion}`;
+                    
+                    // Map emotions to images (Use relative paths)
+                    const emotionImages = {
+                        "Happy": "images/happy.png",
+                        "Sad": "images/sad.png",
+                        "Angry": "images/angry.png",
+                        "Neutral": "images/neutral.png"
+                    };
+
+                    // Show emotion image or error image if no match
+                    resultImage.src = emotionImages[data.emotion] || "d:\SpeechEmotion REcognition\images\error.png";
+                }
+            })
+            .catch(error => {
+                result.textContent = "❌ An error occurred during prediction.";
+                resultImage.src = "d:\SpeechEmotion REcognition\images\error.png";  // Show error image
+                console.error(error);
+            });
+        }
+    </script>
+</body>
+</html>
